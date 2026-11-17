@@ -1,0 +1,298 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ============================================================================
+   Yasun Studio — Design tokens
+   Derived from the brand guide (docs/info_logo_*.jpeg):
+     Navy   → tepercaya (trust)         Cyan   → terbuka & eksploratif
+     Yellow → titik awal & keberanian mencoba (use sparingly, as an accent)
+   ========================================================================== */
+:root {
+  /* Brand palette */
+  --brand-navy-950: #050f2a;
+  --brand-navy-900: #0a1b44;
+  --brand-navy-800: #0d2a66;
+  --brand-navy-700: #143a86;
+  --brand-cyan-500: #19b5f5;
+  --brand-cyan-400: #4cc8f8;
+  --brand-cyan-100: #e0f5fe;
+  --brand-yellow-400: #ffc21a;
+
+  --radius: 0.75rem;
+
+  --background: #ffffff;
+  --foreground: var(--brand-navy-900);
+  --card: #ffffff;
+  --card-foreground: var(--brand-navy-900);
+  --popover: #ffffff;
+  --popover-foreground: var(--brand-navy-900);
+  --primary: var(--brand-navy-800);
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5fb;
+  --secondary-foreground: var(--brand-navy-900);
+  --muted: #f1f5fb;
+  --muted-foreground: #55627d;
+  --accent: var(--brand-cyan-100);
+  --accent-foreground: var(--brand-navy-900);
+  --destructive: #dc2626;
+  --border: #e3e9f3;
+  --input: #d7deeb;
+  --ring: var(--brand-cyan-500);
+  --highlight: var(--brand-yellow-400);
+  /* Text-safe brand cyan: #19b5f5 is only 2.3:1 on white, so text/links use a
+     deeper cyan in light mode (5.2:1). Fills keep the bright cyan via bg-cyan-brand. */
+  --brand: #0273ad;
+  --success: #047857;
+  --code: #f6f8fa; /* code block surface (GitHub light) */
+
+  --chart-1: var(--brand-navy-800);
+  --chart-2: var(--brand-cyan-500);
+  --chart-3: var(--brand-yellow-400);
+  --chart-4: #6c7fa8;
+  --chart-5: #9fd9f3;
+
+  --sidebar: var(--brand-navy-900);
+  --sidebar-foreground: #c9d4ea;
+  --sidebar-primary: var(--brand-cyan-500);
+  --sidebar-primary-foreground: var(--brand-navy-950);
+  --sidebar-accent: rgb(255 255 255 / 0.07);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgb(255 255 255 / 0.08);
+  --sidebar-ring: var(--brand-cyan-500);
+}
+
+.dark {
+  --background: var(--brand-navy-950);
+  --foreground: #e8eefb;
+  --card: #0a1a3d;
+  --card-foreground: #e8eefb;
+  --popover: #0a1a3d;
+  --popover-foreground: #e8eefb;
+  --primary: var(--brand-cyan-500);
+  --primary-foreground: var(--brand-navy-950);
+  --secondary: #11234d;
+  --secondary-foreground: #e8eefb;
+  --muted: #11234d;
+  --muted-foreground: #93a3c4;
+  --accent: #12305f;
+  --accent-foreground: #ffffff;
+  --destructive: #f87171;
+  --border: rgb(255 255 255 / 0.09);
+  --input: rgb(255 255 255 / 0.14);
+  --ring: var(--brand-cyan-400);
+
+  --sidebar: #040c22;
+  --brand: var(--brand-cyan-500);
+  --success: #34d399;
+  --code: #0d1117; /* code block surface (GitHub dark) */
+}
+
+@theme inline {
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-highlight: var(--highlight);
+  --color-brand: var(--brand);
+  --color-success: var(--success);
+  --color-code: var(--code);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --color-navy-950: var(--brand-navy-950);
+  --color-navy-900: var(--brand-navy-900);
+  --color-navy-800: var(--brand-navy-800);
+  --color-navy-700: var(--brand-navy-700);
+  --color-cyan-brand: var(--brand-cyan-500);
+  --color-yellow-brand: var(--brand-yellow-400);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  /* Grid items default to min-width:auto, so one long line (code, URL, truncated
+     title) can widen a column past the viewport. Let them shrink by default. */
+  :where(.grid) > * {
+    min-width: 0;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "ss01", "cv11";
+  }
+  h1, h2, h3, h4 {
+    @apply tracking-tight text-balance;
+  }
+}
+
+@layer utilities {
+  /* Signature navy canvas with soft cyan glow — mirrors the brand guide backdrop */
+  .bg-brand-canvas {
+    background-color: var(--brand-navy-900);
+    background-image:
+      radial-gradient(60rem 30rem at 85% -10%, rgb(25 181 245 / 0.22), transparent 60%),
+      radial-gradient(40rem 24rem at -10% 110%, rgb(25 181 245 / 0.16), transparent 60%);
+  }
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, rgb(255 255 255 / 0.04) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 255 255 / 0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .text-gradient-brand {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(90deg, var(--brand-cyan-500), var(--brand-cyan-400));
+  }
+}
+
+/* ============================================================================
+   Design system — typography & layout rhythm
+   Use these instead of ad-hoc sizes. Full rules: frontend/DESIGN_SYSTEM.md
+   Breakpoints: sm 640 · md 768 · lg 1024 · xl 1280
+   ========================================================================== */
+
+/* Display — home hero only.                       36 → 48 → 60 px */
+@utility text-display {
+  font-size: 2.25rem;
+  line-height: 1.05;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  @media (width >= 40rem) { font-size: 3rem; }
+  @media (width >= 64rem) { font-size: 3.75rem; }
+}
+
+/* Title 1 — public page heroes (h1).              30 → 36 → 48 px */
+@utility text-title-1 {
+  font-size: 1.875rem;
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  @media (width >= 40rem) { font-size: 2.25rem; }
+  @media (width >= 64rem) { font-size: 3rem; }
+}
+
+/* Title 2 — public section headings (h2).         24 → 30 → 36 px */
+@utility text-title-2 {
+  font-size: 1.5rem;
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  @media (width >= 40rem) { font-size: 1.875rem; }
+  @media (width >= 64rem) { font-size: 2.25rem; }
+}
+
+/* Title 3 — app page titles (h1 in the shell), feature banners. 24 px */
+@utility text-title-3 {
+  font-size: 1.5rem;
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Heading — card / block titles (h2–h3).           18 px */
+@utility text-heading {
+  font-size: 1.125rem;
+  line-height: 1.4;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* Metric — KPI numbers, prices, progress percentages. 30 px */
+@utility text-metric {
+  font-size: 1.875rem;
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Lead — intro paragraph under a title.           16 → 18 px */
+@utility text-lead {
+  font-size: 1rem;
+  line-height: 1.65;
+  @media (width >= 40rem) { font-size: 1.125rem; }
+}
+
+/* Eyebrow — small label above a title (colour set by context). 14 px */
+@utility text-eyebrow {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 600;
+}
+
+/* Page container — identical gutters on every public page. */
+@utility container-page {
+  width: 100%;
+  margin-inline: auto;
+  max-width: 80rem;
+  padding-inline: 1rem;
+  @media (width >= 40rem) { padding-inline: 1.5rem; }
+  @media (width >= 64rem) { padding-inline: 2rem; }
+}
+
+/* Vertical rhythm for public sections and heroes. */
+@utility section-y {
+  padding-block: 4rem;
+  @media (width >= 64rem) { padding-block: 6rem; }
+}
+/* Content blocks that sit under a hero (listings, detail bodies, footer). */
+@utility content-y {
+  padding-block: 3rem;
+  @media (width >= 64rem) { padding-block: 4rem; }
+}
+@utility hero-y {
+  padding-block: 3.5rem;
+  @media (width >= 64rem) { padding-block: 5rem; }
+}
+
+/* Shiki dual-theme syntax highlighting (themes emitted as CSS variables). */
+.shiki,
+.shiki span {
+  color: var(--shiki-light);
+}
+.dark .shiki,
+.dark .shiki span {
+  color: var(--shiki-dark);
+}
+.shiki {
+  background-color: transparent !important;
+}

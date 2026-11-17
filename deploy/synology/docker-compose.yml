@@ -1,0 +1,104 @@
+# =============================================================================
+# Yasun Studio — production stack for the Synology NAS (Container Manager)
+#
+# Lives on the NAS at /volume1/docker/yasun-studio/ next to `.env`.
+# Images are built by GitHub Actions and pulled from GHCR — nothing is built on the NAS.
+# Public traffic arrives ONLY through Cloudflare Tunnel (no router port-forwarding);
+# no service publishes a port to the internet.
+#
+#   docker compose pull && docker compose up -d      (or ./deploy.sh)
+# =============================================================================
+name: yasun-studio
+
+x-common: &common
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options: { max-size: "10m", max-file: "3" } # keep NAS disks from filling with logs
+
+services:
+  db:
+    <<: *common
+    image: postgres:18.7-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - ./data/postgres:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    shm_size: 256mb
+    mem_limit: 512m
+    networks: [backend]
+
+  redis:
+    <<: *common
+    image: redis:8.8-alpine
+    command: >
+      redis-server --requirepass ${REDIS_PASSWORD} --appendonly yes
+      --maxmemory 128mb --maxmemory-policy allkeys-lru
+    environment:
+      REDISCLI_AUTH: ${REDIS_PASSWORD}
+    volumes:
+      - ./data/redis:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    mem_limit: 192m
+    networks: [backend]
+
+  backend:
+    <<: *common
+    image: ${REGISTRY:-ghcr.io/yasunstudio}/yasun-studio-backend:${IMAGE_TAG:-latest}
+    env_file: .env
+    environment:
+      ENVIRONMENT: production
+      SEED_SAMPLE_DATA: "false" # production: only the first admin account is created
+    depends_on:
+      db: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    mem_limit: 768m
+    networks: [backend, frontend]
+
+  frontend:
+    <<: *common
+    image: ${REGISTRY:-ghcr.io/yasunstudio}/yasun-studio-frontend:${IMAGE_TAG:-latest}
+    environment:
+      API_INTERNAL_URL: http://backend:8000/api/v1
+      NEXT_PUBLIC_SITE_URL: ${SITE_URL}
+    depends_on:
+      backend: { condition: service_healthy }
+    mem_limit: 512m
+    networks: [frontend]
+
+  gateway:
+    <<: *common
+    image: ${REGISTRY:-ghcr.io/yasunstudio}/yasun-studio-gateway:${IMAGE_TAG:-latest}
+    depends_on: [frontend, backend]
+    # Optional LAN access for troubleshooting, e.g. http://<NAS-IP>:8088 (never forward this
+    # port on the router). DSM itself already uses 80/443/5000/5001.
+    ports:
+      - "${LAN_PORT:-8088}:80"
+    mem_limit: 64m
+    networks: [frontend, edge]
+
+  cloudflared:
+    <<: *common
+    image: cloudflare/cloudflared:2026.10.7
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on: [gateway]
+    mem_limit: 128m
+    networks: [edge]
+
+networks:
+  backend:
+  frontend:
+  edge:

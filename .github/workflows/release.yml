@@ -1,0 +1,81 @@
+# Builds production images and pushes them to GitHub Container Registry (GHCR).
+# The Synology NAS pulls these images — nothing is compiled on the NAS.
+#
+# Repository → Settings → Secrets and variables → Actions → Variables:
+#   SITE_URL   (required) public URL baked into the frontend, e.g. https://yasunstudio.com
+#   PLATFORMS  (optional) default linux/amd64; use linux/amd64,linux/arm64 for ARM NAS models
+name: Release images
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  image:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: backend
+            context: backend
+            target: prod
+          - name: frontend
+            context: frontend
+            target: prod
+          - name: gateway
+            context: infra/nginx
+            target: ""
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Check required variables
+        if: matrix.name == 'frontend' && vars.SITE_URL == ''
+        run: |
+          echo "::error::Repository variable SITE_URL is not set (Settings → Secrets and variables → Actions → Variables)."
+          exit 1
+
+      - uses: docker/setup-qemu-action@v4
+        if: contains(vars.PLATFORMS || 'linux/amd64', 'arm64')
+      - uses: docker/setup-buildx-action@v4
+
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/yasun-studio-${{ matrix.name }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,prefix=sha-,format=short
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      - uses: docker/build-push-action@v7
+        with:
+          context: ${{ matrix.context }}
+          target: ${{ matrix.target }}
+          platforms: ${{ vars.PLATFORMS || 'linux/amd64' }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            NEXT_PUBLIC_SITE_URL=${{ vars.SITE_URL }}
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}
+          provenance: false

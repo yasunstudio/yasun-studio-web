@@ -1,0 +1,39 @@
+# =============================================================================
+# Development overrides — loaded automatically by `docker compose up`.
+# Hot reload for backend & frontend, ports exposed for local tooling.
+# =============================================================================
+services:
+  db:
+    ports: ["${DB_HOST_PORT:-5432}:5432"]
+
+  redis:
+    ports: ["${REDIS_HOST_PORT:-6379}:6379"]
+
+  backend:
+    image: yasun-studio-backend:dev   # separate tag from the prod image
+    build:
+      target: dev
+    environment:
+      ENVIRONMENT: local
+    ports: ["${BACKEND_HOST_PORT:-8000}:8000"]
+    volumes:
+      - ./backend:/app
+      - /app/.venv
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      interval: 10s
+      timeout: 3s
+      start_period: 40s
+      retries: 5
+
+  frontend:
+    image: yasun-studio-frontend:dev
+    build:
+      target: dev
+    environment:
+      WATCHPACK_POLLING: "true"
+    ports: ["${FRONTEND_HOST_PORT:-3000}:3000"]
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next

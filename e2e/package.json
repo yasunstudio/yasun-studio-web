@@ -1,0 +1,17 @@
+{
+  "name": "yasun-studio-e2e",
+  "private": true,
+  "type": "module",
+  "description": "Browser E2E, rich-lesson and UI-quality audits against a running stack (uses the system Chrome).",
+  "scripts": {
+    "reset-limits": "docker compose -f ../docker-compose.yml exec -T redis sh -c \"redis-cli --scan --pattern 'ratelimit:*' | xargs -r redis-cli del\" > /dev/null",
+    "flow": "npm run reset-limits && node flow.mjs",
+    "rich": "npm run reset-limits && node rich.mjs",
+    "audit": "node audit.mjs",
+    "all": "npm run flow && npm run rich && npm run audit"
+  },
+  "dependencies": {
+    "axe-core": "4.14.0",
+    "playwright-core": "1.64.1"
+  }
+}

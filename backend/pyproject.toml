@@ -1,0 +1,56 @@
+[project]
+name = "yasun-studio-api"
+version = "0.1.0"
+description = "Yasun Studio — Backend API (FastAPI)"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "fastapi[standard]>=0.163.1",
+    "uvicorn[standard]>=0.54.0",
+    "sqlalchemy[asyncio]>=2.1.9",
+    "asyncpg>=0.32.0",
+    "alembic>=1.20.1",
+    "pydantic>=2.14.3",
+    "pydantic-settings>=2.16.3",
+    "email-validator>=2.4.0",
+    "redis[hiredis]>=8.1.0",
+    "pyjwt>=2.15.1",
+    "pwdlib[argon2]>=0.4.2",
+    "structlog>=26.1.0",
+    "orjson>=3.13.0",
+    "python-slugify>=8.0.4",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+    "pytest-asyncio>=1.5.0",
+    "httpx>=0.28.1",
+    "ruff>=0.17.5",
+    "mypy>=2.4.1",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "ASYNC", "RUF"]
+ignore = ["B008"]  # FastAPI Depends() in default args
+
+[tool.ruff.lint.per-file-ignores]
+# Seed content is long-form Indonesian prose & code samples (typographic dashes are intentional).
+"scripts/seed/{courses_*,posts,people,assessments,enrichment}.py" = ["E501", "RUF001"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.14"
+strict = true
+plugins = ["pydantic.mypy"]
